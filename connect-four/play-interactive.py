@@ -3,10 +3,13 @@
 # Author : aigames@kirubakaran.com
 
 import sys
-import runner
+import copy
 
-def next_move():
-    return 1
+import runner
+import skank
+
+def nextmove(game):    
+    return skank.nextmove(copy.deepcopy(game))
 
 def main():
     game = runner.Game()
@@ -37,7 +40,7 @@ def main():
                     endit("Tie")
             game.print_grid()
             
-        move = next_move()
+        move = nextmove(game)
         print("me: %s"%(move,))
         try:
             game.push_move(move)
