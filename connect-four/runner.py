@@ -42,6 +42,23 @@ class Player(object):
         print('%s\t%s' % (self.cmd, ' '.join([str(move) for move in self.moves])))
 
 
+class MockPlayer(object):
+    def __init__(self, moves):
+        self.moves = moves
+        self.moved = []
+        self.cmd = 'mock.py'
+
+    def get_move(self):
+        self.moved.append(self.moves.pop(0))
+        return self.moved[-1]
+
+    def set_move(self, move):
+        pass
+
+    def print_moves(self):
+        print('%s\t%s' % (self.cmd, ' '.join([str(move) for move in self.moved])))
+
+
 class Game(object):
 
     ROWS = 6
@@ -91,8 +108,7 @@ class Game(object):
         if len(series) < 4:
             return False
         for idx in xrange(0, len(series) - 4):
-            if ([series[idx]] * 4 == series[idx:idx + 4] and
-                    all((x is not None for x in series[idx:idx + 4]))):
+            if ([series[idx]] * 4 == series[idx:idx + 4] and series[idx] is not None):
                 return True
         return False
 
