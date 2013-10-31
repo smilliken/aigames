@@ -68,7 +68,7 @@ class Game(object):
     def print_grid(self):
         print('-' * (Game.COLUMNS * 2 + 3))
         for row in self.grid_rows[::-1]:
-            print('| %s |' % ' '.join([str(cell if cell is not None else ' ') for cell in row]))
+            print('| %s |' % ' '.join([str(cell if cell is not None else '.') for cell in row]))
         print('-' * (Game.COLUMNS * 2 + 3))
 
     def is_won(self):
