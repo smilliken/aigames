@@ -43,8 +43,26 @@ def nextmove_3(game):
                     else:
                         return i
                     
-            #for i,currow in enumerate(rows):
-                
+            for i,currow in enumerate(rows):
+                s = list2str(currow)
+                loc = s.find(str(symbol)*l)                
+                if loc > -1:
+                    if (loc > 0 and currow[loc-1] == None):
+                        try:
+                            g2 = copy.deepcopy(g)
+                            g2.push_move(loc)
+                        except ValueError:
+                            pass
+                        else:
+                            return loc-1
+                    if (loc < 7 and currow[loc+l] == None):
+                        try:
+                            g3 = copy.deepcopy(g)
+                            g3.push_move(loc)
+                        except ValueError:
+                            pass
+                        else:
+                            return loc+l
             
     # nothing worked; return a safe move
     for i in range(7):
