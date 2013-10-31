@@ -52,6 +52,8 @@ def nextmove_3(game):
     if len(okmoves) == 0:
         #you'll win in a move, you bastard, no matter what i do
         return 4
+    if len(okmoves) == 1:
+        return okmoves[0]
     # --- old end
     
     tgame = copy.deepcopy(game)
@@ -95,14 +97,17 @@ def nextmove_3(game):
                             pass
                         else:
                             return loc-1
-                    if (loc < 7 and currow[loc+l] == None):
-                        try:
-                            g3 = copy.deepcopy(g)
-                            g3.push_move(loc)
-                        except ValueError:
-                            pass
-                        else:
-                            return loc+l
+                    try:
+                        if (loc < 7 and currow[loc+l] == None):
+                            try:
+                                g3 = copy.deepcopy(g)
+                                g3.push_move(loc)
+                            except ValueError:
+                                pass
+                            else:
+                                return loc+l
+                    except IndexError:
+                        pass
 
     #diagonals
     for symbol in [mysymbol,hersymbol]:
@@ -143,7 +148,22 @@ if __name__ == '__main__':
         else:
             game.push_move(l)
         m = nextmove(game)
-        game.push_move(m)
-        game.print_grid()
-        print m
+        gg = copy.deepcopy(game)
+        err = False
+        try:
+            game.push_move(m)
+        except ValueError:
+            err = True
+        else:
+            print m
+        if err:
+            for mm in range(7):
+                ggz = copy.deepcopy(gg)
+                try:
+                    ggz.push_move(m)
+                except ValueError:
+                    pass
+                else:
+                    print mm
+        #game.print_grid()
         sys.stdout.flush()
