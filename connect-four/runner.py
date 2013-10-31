@@ -2,9 +2,15 @@
 
 import argparse
 import subprocess
+import threading
 from collections import defaultdict
 
 PIPE = subprocess.PIPE
+
+
+def echo_stderr(player):
+    for line in iter(player.proc.stderr.readline, b''):
+        print('%s debug: %s' % (player.cmd, line.strip()))
 
 
 class Player(object):
@@ -14,6 +20,9 @@ class Player(object):
         self.proc = subprocess.Popen(
             cmd, bufsize=0, stdin=PIPE, stdout=PIPE, stderr=PIPE)
         self.moves = []
+        self.stderr_thread = threading.Thread(target=echo_stderr, args=(self,))
+        self.stderr_thread.daemon = True
+        self.stderr_thread.start()
 
     def get_move(self):
         move = self.proc.stdout.readline()
@@ -109,12 +118,14 @@ def rungame(player0, player1):
         try:
             game.push_move(val)
         except ValueError, ex:
+            print('')
             player0.print_moves()
             player1.print_moves()
             game.print_grid()
             print('%s loses: %s' % (current_player.cmd, ex.message))
             return next_player
         if game.is_won():
+            print('')
             player0.print_moves()
             player1.print_moves()
             game.print_grid()
