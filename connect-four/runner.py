@@ -114,7 +114,15 @@ def rungame(player0, player1):
 
     game = Game()
     while True:
-        val = current_player.get_move()
+        try:
+            val = current_player.get_move()
+        except ValueError, ex:
+            print('')
+            player0.print_moves()
+            player1.print_moves()
+            game.print_grid()
+            print('%s loses: %s' % (current_player.cmd, ex.message))
+            return next_player
         try:
             game.push_move(val)
         except ValueError, ex:
