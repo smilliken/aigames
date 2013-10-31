@@ -43,10 +43,10 @@ class Player(object):
 
 
 class MockPlayer(object):
-    def __init__(self, moves):
+    def __init__(self, moves, cmd):
         self.moves = moves
         self.moved = []
-        self.cmd = 'mock.py'
+        self.cmd = cmd
 
     def get_move(self):
         self.moved.append(self.moves.pop(0))
@@ -107,7 +107,7 @@ class Game(object):
     def check_series(self, series):
         if len(series) < 4:
             return False
-        for idx in xrange(0, len(series) - 4):
+        for idx in xrange(0, len(series) - 3):
             if ([series[idx]] * 4 == series[idx:idx + 4] and series[idx] is not None):
                 return True
         return False
