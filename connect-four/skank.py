@@ -14,6 +14,46 @@ def list2str(l):
     return s
 
 def nextmove_3(game):
+
+    # --- old begin
+    # if there is a winning move, take it
+    for i in range(7):
+        tgame = copy.deepcopy(game)
+        try:
+            tgame.push_move(i)
+        except ValueError:
+            pass
+        else:
+            if tgame.is_won():
+                return i
+
+    badmoves = []
+    # if the move lets the opponent win next turn, don't do it
+    for i in range(7):
+        for j in range(7):
+            tgame = copy.deepcopy(game)
+            try:
+                tgame.push_move(i)
+            except ValueError:
+                #can't have that!
+                badmoves.append(i)
+                continue
+            try:
+                tgame.push_move(j)
+            except ValueError:
+                pass #they aren't going to make this move or they'll lose
+            else:
+                #print "checking",i,j
+                #tgame.print_grid()
+                if tgame.is_won():
+                    badmoves.append(i)
+                    
+    okmoves = list(set(range(7)) - set(badmoves))
+    if len(okmoves) == 0:
+        #you'll win in a move, you bastard, no matter what i do
+        return 4
+    # --- old end
+    
     tgame = copy.deepcopy(game)
     mysymbol = len(tgame.moves)%2
     hersymbol = abs(mysymbol - 1)
@@ -63,7 +103,19 @@ def nextmove_3(game):
                             pass
                         else:
                             return loc+l
+
+    #diagonals
+    for symbol in [mysymbol,hersymbol]:
+        for l in range(1,7):
+            gd = copy.deepcopy(g)
+            c = cols[l]
+            #get top of col as n
+            for n,xx in enumerate(c):
+                if xx == None:
+                    break
             
+
+    
     # nothing worked; return a safe move
     for i in range(7):
         try:
