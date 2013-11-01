@@ -136,11 +136,22 @@ if __name__ == '__main__':
     # skank router
     args = sys.argv[:]
     myname = args[0].split('/')[-1]
+
+    #if moves are supplied, play them
+    if len(args) > 1:
+        moves  = list(args[1])
+    else:
+        moves = []
+        
     nextmove = nextmove_3
         
     game = runner.Game()
     while not sys.stdin.closed:
-        line = sys.stdin.readline()
+        if len(moves) > 0:
+            line = moves.pop(0)
+            print line
+        else:
+            line = sys.stdin.readline()
         try:
             l = int(line)
         except ValueError:
@@ -165,5 +176,5 @@ if __name__ == '__main__':
                     pass
                 else:
                     print mm
-        #game.print_grid()
+        game.print_grid()
         sys.stdout.flush()
