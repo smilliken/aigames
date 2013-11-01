@@ -4,6 +4,7 @@ import argparse
 import subprocess
 import threading
 from collections import defaultdict
+import time
 
 PIPE = subprocess.PIPE
 
@@ -133,7 +134,13 @@ def rungame(player0, player1):
     game = Game()
     while True:
         try:
+            t1 = time.time()
             val = current_player.get_move()
+            t2 = time.time()
+            time_taken = t2-t1
+            if time_taken > 1.1:
+                print('%s loses: Move took %.2f seconds' % (current_player.cmd, time_taken))
+                return next_player
         except ValueError, ex:
             print('')
             player0.print_moves()
