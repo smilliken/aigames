@@ -64,6 +64,7 @@ class Game(object):
 
     ROWS = 6
     COLUMNS = 7
+    MAXTIME = 1.1
 
     def __init__(self):
         self.moves = []
@@ -138,7 +139,7 @@ def rungame(player0, player1):
             val = current_player.get_move()
             t2 = time.time()
             time_taken = t2-t1
-            if time_taken > 1.1:
+            if time_taken > game.MAXTIME:
                 print('%s loses: Move took %.2f seconds' % (current_player.cmd, time_taken))
                 return next_player
         except ValueError, ex:
