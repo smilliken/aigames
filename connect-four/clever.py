@@ -35,29 +35,29 @@ class Game(object):
     def column_height(self, col_idx):
         return len([x for x in self.grid_columns[col_idx] if x is not None])
 
-    def is_won(self):
-        return (self.any_columns_won() or self.any_rows_won() or
-            self.any_diags_won())
+    def is_won(self, runlen=4):
+        return (self.any_columns_won(runlen) or self.any_rows_won(runlen) or
+            self.any_diags_won(runlen))
 
     def is_full(self):
         return len(self.moves) == Game.ROWS * Game.COLUMNS
 
-    def any_columns_won(self):
-        return any(self.check_series(column) for column in self.grid_columns)
+    def any_columns_won(self, runlen=None):
+        return any(self.check_series(column, runlen) for column in self.grid_columns)
 
-    def any_rows_won(self):
-        return any(self.check_series(row) for row in self.grid_rows)
+    def any_rows_won(self, runlen=None):
+        return any(self.check_series(row, runlen) for row in self.grid_rows)
 
-    def any_diags_won(self):
-        return any(self.check_series(diag) for diag in self.diags)
+    def any_diags_won(self, runlen=None):
+        return any(self.check_series(diag, runlen) for diag in self.diags)
 
-    def check_series(self, series):
-        '''Return whether there are 4 in a row.'''
-        if len(series) < 4:
+    def check_series(self, series, runlen):
+        '''Return whether there are `runlen` in a row.'''
+        if len(series) < runlen:
             return False
-        for idx in xrange(0, len(series) - 4):
-            if ([series[idx]] * 4 == series[idx:idx + 4] and
-                    all((x is not None for x in series[idx:idx + 4]))):
+        for idx in xrange(0, len(series) - runlen + 1):
+            if ([series[idx]] * runlen == series[idx:idx + runlen] and
+                    all((x is not None for x in series[idx:idx + runlen]))):
                 return True
         return False
 
@@ -73,21 +73,32 @@ class Game(object):
 
 def pick_random(choices):
     if choices:
-        return random.choice(choices)
-    return
+        return random.choice(list(choices))
+
+def pick_min(choices):
+    if choices:
+        return min(choices)
 
 def get_next_move(game):
-    # we're starting, choose middle
-    if not game.moves:
-        return Game.COLUMNS / 2
+    '''
+    A very hacky rules-based approach. Only looks ahead one move and is in major need of
+    refactoring.
+    '''
     # any possible 4-in-a-rows this turn?
     for out_move in xrange(game.COLUMNS):
         game2 = copy.deepcopy(game)
         game2.push_move(out_move)
         if game2.is_won():
+            trash_talk([
+                'ohhh yea!', 'another win for clever', 'yeah yeah yeah', 'checkmate!', 'too easy'])
             return out_move
 
-    move_blacklist = [x for x in xrange(game.COLUMNS) if game.column_height(x) >= game.ROWS]
+    legal_moves = set([
+        x for x in xrange(game.COLUMNS) if game.column_height(x) < game.ROWS])
+    really_bad_moves = set([])
+    kinda_bad_moves = set([])
+    kinda_good_moves = set([])
+
     # don't enable any 4-in-a-rows in the next opponent move
     for our_move in xrange(game.COLUMNS):
         game2 = copy.deepcopy(game)
@@ -96,22 +107,58 @@ def get_next_move(game):
             game3 = copy.deepcopy(game2)
             game3.push_move(their_move)
             if game3.is_won():
-                move_blacklist.append(our_move)
+                really_bad_moves.add(our_move)
 
-    # choose based on our parity
-    move = pick_random([x for x in xrange(Game.COLUMNS)
-        if x % 2 == len(game.moves) % 2
-        and x not in move_blacklist])
-    if move is not None:
-        return move
-    # no other ideas, choose random
-    move = pick_random([x for x in xrange(Game.COLUMNS) if x not in move_blacklist])
-    if move is not None:
-        return move
-    return 3
+    # prefer no 3-in-a-rows in the next opponent move
+    for our_move in xrange(game.COLUMNS):
+        game2 = copy.deepcopy(game)
+        game2.push_move(our_move)
+        for their_move in xrange(game.COLUMNS):
+            game3 = copy.deepcopy(game2)
+            if game3.is_won(runlen=3):
+                continue
+            game3.push_move(their_move)
+            if game3.is_won(runlen=3):
+                kinda_bad_moves.add(our_move)
 
-def log(msg):
-    sys.stderr.write('%s\n' % msg)
+    # prefer that we get 3-in-a-rows
+    for our_move in xrange(game.COLUMNS):
+        game2 = copy.deepcopy(game)
+        if game2.is_won(runlen=3):
+            continue
+        game2.push_move(our_move)
+        if game2.is_won(runlen=3):
+            kinda_good_moves.add(our_move)
+
+    kinda_bad_moves.update(really_bad_moves)
+
+    # try kinda good moves...
+    move = pick_random(kinda_good_moves.difference(kinda_bad_moves))
+    if move is not None:
+        log('kind good move', move)
+        return move
+    # try legal moves that aren't bad...
+    move = pick_random(legal_moves.difference(kinda_bad_moves))
+    if move is not None:
+        log('legal not bad move', move)
+        return move
+    # try any legal move that isn't really bad...
+    move = pick_random(legal_moves.difference(really_bad_moves))
+    if move is not None:
+        trash_talk(['hmm..', 'bah', 'pfft'])
+        log('legal not really bad', move)
+        return move
+    # ok, try any legal move
+    trash_talk(['fuuuuuu.....', 'touche', 'ughh'])
+    return pick_random(legal_moves)
+
+def log(msg, move=None):
+    return
+    sys.stderr.write('%s %s\n' % (msg, move or ''))
+    sys.stderr.flush()
+
+def trash_talk(quotes):
+    sys.stderr.write('%s\n' % pick_random(quotes))
     sys.stderr.flush()
 
 def main():
