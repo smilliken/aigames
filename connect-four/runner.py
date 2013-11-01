@@ -157,6 +157,7 @@ def rungame(player0, player1):
             return current_player
         elif game.is_full():
             print('tie!')
+            return
         next_player.set_move(val)
         (current_player, next_player) = (next_player, current_player)
 
