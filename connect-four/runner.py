@@ -4,6 +4,7 @@ import argparse
 import subprocess
 import threading
 from collections import defaultdict
+import time
 
 PIPE = subprocess.PIPE
 
@@ -63,6 +64,7 @@ class Game(object):
 
     ROWS = 6
     COLUMNS = 7
+    MAXTIME = 1.1
 
     def __init__(self):
         self.moves = []
@@ -86,6 +88,8 @@ class Game(object):
         print('-' * (Game.COLUMNS * 2 + 3))
         for row in self.grid_rows[::-1]:
             print('| %s |' % ' '.join([str(cell if cell is not None else '.') for cell in row]))
+        print('-' * (Game.COLUMNS * 2 + 3))
+        print('| %s |'%( ' '.join([str(c) for c in range(Game.COLUMNS)]) ))
         print('-' * (Game.COLUMNS * 2 + 3))
 
     def is_won(self):
@@ -131,7 +135,13 @@ def rungame(player0, player1):
     game = Game()
     while True:
         try:
+            t1 = time.time()
             val = current_player.get_move()
+            t2 = time.time()
+            time_taken = t2-t1
+            if time_taken > game.MAXTIME:
+                print('%s loses: Move took %.2f seconds' % (current_player.cmd, time_taken))
+                return next_player
         except ValueError, ex:
             print('')
             player0.print_moves()

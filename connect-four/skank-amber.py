@@ -15,7 +15,7 @@ def list2str(l):
 
 def nextmove_3(game):
 
-    # --- old begin
+    # --- old code begin
     # if there is a winning move, take it
     for i in range(7):
         tgame = copy.deepcopy(game)
@@ -43,18 +43,20 @@ def nextmove_3(game):
             except ValueError:
                 pass #they aren't going to make this move or they'll lose
             else:
-                #print "checking",i,j
-                #tgame.print_grid()
                 if tgame.is_won():
                     badmoves.append(i)
-                    
+
+    badmoves = list(set(badmoves))
     okmoves = list(set(range(7)) - set(badmoves))
     if len(okmoves) == 0:
         #you'll win in a move, you bastard, no matter what i do
         return 4
     if len(okmoves) == 1:
         return okmoves[0]
-    # --- old end
+    # --- old code end
+
+    def okmove(move1):
+        return (move1 in okmoves)
     
     tgame = copy.deepcopy(game)
     mysymbol = len(tgame.moves)%2
@@ -83,7 +85,7 @@ def nextmove_3(game):
                     except ValueError:
                         pass
                     else:
-                        return i
+                        if okmove(i): return i
                     
             for i,currow in enumerate(rows):
                 s = list2str(currow)
@@ -96,7 +98,7 @@ def nextmove_3(game):
                         except ValueError:
                             pass
                         else:
-                            return loc-1
+                            if okmove(loc-1): return loc-1
                     try:
                         if (loc < 7 and currow[loc+l] == None):
                             try:
@@ -105,7 +107,7 @@ def nextmove_3(game):
                             except ValueError:
                                 pass
                             else:
-                                return loc+l
+                                if okmove(loc+l): return loc+l
                     except IndexError:
                         pass
 
@@ -119,28 +121,36 @@ def nextmove_3(game):
                 if xx == None:
                     break
             
-
-    
     # nothing worked; return a safe move
-    for i in range(7):
-        try:
-            ge = copy.deepcopy(g)
-            ge.push_move(i)
-        except ValueError:
-            pass
-        else:
-            return i
+    try:
+        ge = copy.deepcopy(g)
+        ge.push_move(okmoves[0])
+    except ValueError:
+        pass
+    else:
+        okmoves[0]
     return 4
 
 if __name__ == '__main__':
     # skank router
     args = sys.argv[:]
     myname = args[0].split('/')[-1]
+
+    #if moves are supplied, play them
+    if len(args) > 1:
+        moves  = list(args[1])
+    else:
+        moves = []
+        
     nextmove = nextmove_3
         
     game = runner.Game()
     while not sys.stdin.closed:
-        line = sys.stdin.readline()
+        if len(moves) > 0:
+            line = moves.pop(0)
+            print line
+        else:
+            line = sys.stdin.readline()
         try:
             l = int(line)
         except ValueError:
