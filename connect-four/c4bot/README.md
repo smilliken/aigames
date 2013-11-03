@@ -1,5 +1,6 @@
 This is a mostly-untested implementation of naive Monte Carlo tree
-search.
+search.  It uses almost all of the allotted 1 second, so games can be
+slow.
 
 Run `make` to build, `make test` to go a round against clever.py.
 
