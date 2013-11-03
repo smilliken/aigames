@@ -1,0 +1,18 @@
+This is a mostly-untested implementation of naive Monte Carlo tree
+search.
+
+Run `make` to build, `make test` to go a round against clever.py.
+
+TODO:
+* Figure out why the second player always wins when c4bot plays
+  itself.  I'm probably doing something wrong with the tree traversal.
+* Parallelize -- tree search is embarrassingly parallel.
+* Pre-cache the first few moves.  Our first 7 moves can be played
+  perfectly with 1MB or so lookup table.
+* Check that we perform well enough on the endgame.  Consider
+  switching to minimax for the endgame.
+* Add control for space usage -- on a fast machine without much memory
+  we can end up in swap right now.
+* Make `calc_score` faster, or compute it less often.  Figure out the
+  correct constant.
+* Add actual knowledge of Connect-4 strategy to help prune the tree.
