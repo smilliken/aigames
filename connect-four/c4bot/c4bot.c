@@ -46,12 +46,13 @@ void debug_pos(struct pos *p) {
     debugf("%lf %lf/%lf\n\n", p->w/p->n, p->w, p->n);
 }
 
-const double C = 1.41421356237; // sqrt(2)
+// sqrt(2) * 1/sqrt(1/ln(2))
+const double C = 1.41421356237 * 0.83255461115;
 static inline double calc_score(double t, struct pos *p, int sign) {
     double frac = (((sign-1)/-2)*p->n + sign*p->w) / p->n;
-    int rough_log;
-    frexp(t, &rough_log);
-    return frac + C*sqrt(rough_log/p->n);
+    int rough_l2;
+    frexp(t, &rough_l2);
+    return frac + C*sqrt(rough_l2/p->n);
 }
 
 static inline int winner(struct pos *p, int ci, int cf) {
@@ -114,13 +115,14 @@ static inline int monte_carlo_round(struct pos *p, int sign) {
 }
 
 static inline void estimate_score(struct pos *p, int sign) {
-    int w, pw, pn;
+    int w;
+    double pw;
     if ((w = (p->winner ? p->winner : monte_carlo_round(p, sign)))) {
-        pw = (w == 1); pn = 1;
+        pw = (w == 1);
     } else {
-        pw = 1; pn = 2;
+        pw = 0.1; // TODO: optimize
     }
-    do { p->w += pw; p->n += pn; } while ((p = p->parent));
+    do { p->w += pw; p->n += 1; } while ((p = p->parent));
 }
 
 static inline void add_leaf_node(struct pos *parent, int f, int sign) {
