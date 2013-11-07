@@ -17,7 +17,7 @@ def list2str(l):
         s += str(ll) if ll != None else " "
     return s
 
-def nextmove(game):
+def nextmove(game,diagchk):
     global nnn
     # --- old code begin
     # if there is a winning move, take it
@@ -74,7 +74,44 @@ def nextmove(game):
     rows = g.grid_rows
     
     for l in [3,2,1]:
-        for symbol in [mysymbol,hersymbol]:
+        for symbol in [hersymbol,mysymbol]:            
+            # rows
+            for i,currow in enumerate(rows):
+                s = list2str(currow)
+                loc = s.find(str(symbol)*l)                
+                if loc > -1:
+                    if (loc > 0 and currow[loc-1] == None):
+                        try:
+                            g2 = copy.deepcopy(g)
+                            g2.push_move(loc)
+                        except ValueError:
+                            pass
+                        else:
+                            debugit("(row<<) %s will do" % (loc-1))
+                            if okmove(loc-1):
+                                debugit(" - and it is an okay move")    
+                                return loc-1
+                            else:
+                                debugit(" - but not an okay move")
+                            
+                    try:
+                        if (loc < 7 and currow[loc+l] == None):
+                            try:
+                                g3 = copy.deepcopy(g)
+                                g3.push_move(loc)
+                            except ValueError:
+                                pass
+                            else:
+                                debugit("(row>>) %s will do" % (loc+1))
+                                if okmove(loc+l):
+                                    debugit(" - and it is an okay move")
+                                    return loc+l
+                                else:
+                                    debugit(" - but not an okay move")
+                    except IndexError:
+                        pass
+
+            # columns
             for i,curcol in enumerate(cols):
                 xc = []
                 for cc in curcol:
@@ -92,46 +129,39 @@ def nextmove(game):
                     except ValueError:
                         pass
                     else:
-                        debugit("%s will do" % i)
+                        debugit("(col) %s will do" % i)
                         if okmove(i):
                             debugit(" - and it is an okay move")
                             return i
                         else:
                             debugit(" - but not an okay move")
-                    
-            for i,currow in enumerate(rows):
-                s = list2str(currow)
-                loc = s.find(str(symbol)*l)                
-                if loc > -1:
-                    if (loc > 0 and currow[loc-1] == None):
-                        try:
-                            g2 = copy.deepcopy(g)
-                            g2.push_move(loc)
-                        except ValueError:
-                            pass
-                        else:
-                            if okmove(loc-1): return loc-1
-                    try:
-                        if (loc < 7 and currow[loc+l] == None):
-                            try:
-                                g3 = copy.deepcopy(g)
-                                g3.push_move(loc)
-                            except ValueError:
-                                pass
-                            else:
-                                if okmove(loc+l): return loc+l
-                    except IndexError:
-                        pass
 
-    #diagonals
-    for symbol in [mysymbol,hersymbol]:
-        for l in range(1,7):
-            gd = copy.deepcopy(g)
-            c = cols[l]
-            #get top of col as n
-            for n,xx in enumerate(c):
-                if xx == None:
-                    break
+            # diagonals
+            if diagchk:
+                diagmoves = []
+
+                if l > 2:                
+                    for i in okmoves:
+                        gd = copy.deepcopy(g)
+                        try:
+                            gd.push_move(i)
+                        except ValueError:
+                            continue
+                        else:
+                            pass
+
+                        gdcols = gd.grid_columns
+                        gdrows = gd.grid_rows
+
+                        rdiag,ldiag = diag_at(gd,i,l)
+                        srdiag = list2str(rdiag)
+                        sldiag = list2str(ldiag)
+
+                        if srdiag == str(mysymbol) + str(hersymbol)*(l-1):
+                            diagmoves.append(i)
+                    if len(diagmoves) > 0:
+                        debugit("got a good blocking diag move : %s"%i)
+                        return diagmoves[0]
             
     # nothing worked; return a safe move
     safemove = okmoves[int( (len(okmoves)) / 2)]
@@ -148,6 +178,29 @@ def nextmove(game):
     
     return FUCK_IT_MOVE
 
+def diag_at(gg,c,n):
+    ggc = copy.deepcopy(gg)
+    cols = ggc.grid_columns
+    rows = ggc.grid_rows
+
+    for r,cc in enumerate(cols[c]):
+        if cc == None:
+            break
+        
+    r -= 1 #top most row of a col
+    
+    rdiag,ldiag = [],[]
+    rc,lc = c,c
+    while r >= 0:
+        if lc >= 0:
+            ldiag.append(rows[r][lc])
+        if rc < len(rows[0]):
+            rdiag.append(rows[r][rc])
+        lc -= 1
+        rc += 1
+        r -= 1
+    return [rdiag,ldiag]
+
 def sayit(t):
     sys.stderr.write('%s\n' % t)
     sys.stderr.flush()
@@ -157,6 +210,16 @@ def debugit(t):
         sayit("> [%s]" % t)
 
 if __name__ == '__main__':
+    # skank router
+    args = sys.argv[:]
+    myname = args[0].split('/')[-1]
+    if "becky" in myname:
+        diagchk = True
+        xname = "Becky"
+    else:
+        diagchk = False
+        xname = "Betsy"
+    
     parser = argparse.ArgumentParser(description='Play Connect-4')
     parser.add_argument('--printit',required=False,action='store_true')
     parser.add_argument('--debug',required=False,action='store_true')
@@ -175,7 +238,7 @@ if __name__ == '__main__':
     if args['moves']:
         moves  = args['moves'].split(',')
     else:
-        sayit("I'm the badass Betsy, bitch!")
+        sayit("I'm %s, bitch!"%xname)
         moves = []
         
     game = runner.Game()
@@ -197,7 +260,7 @@ if __name__ == '__main__':
             pass
         else:
             game.push_move(l)
-        m = nextmove(game)
+        m = nextmove(game,diagchk)
         gg = copy.deepcopy(game)
         err = False
         try:
