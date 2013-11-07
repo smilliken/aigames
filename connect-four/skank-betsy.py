@@ -161,8 +161,14 @@ if __name__ == '__main__':
     parser.add_argument('--printit',required=False,action='store_true')
     parser.add_argument('--debug',required=False,action='store_true')
     parser.add_argument('--moves',required=False)
+    parser.add_argument('--autopilot',required=False)
     args = vars(parser.parse_args())
 
+    if args['autopilot']:
+        autopilotn = int(args['autopilot'])
+    else:
+        autopilotn = 0
+    
     DEBUG = args['debug']
     
     #if moves are supplied, play them
@@ -177,6 +183,9 @@ if __name__ == '__main__':
         if len(moves) > 0:
             line = moves.pop(0)
             sayit(line)
+        elif autopilotn > 0:
+            autopilotn -= 1
+            line = ''
         else:
             line = sys.stdin.readline()
         if line.strip() == 'printit':
