@@ -172,6 +172,38 @@ def rungame(player0, player1):
         (current_player, next_player) = (next_player, current_player)
 
 
+def interactivegame(player1):
+    def prompt():
+        move = None
+        while not move:
+            move = raw_input('so?')
+            try:
+                move = int(move)
+            except ValueError:
+                continue
+            if not (0 <= move < 7):
+                continue
+            return move
+
+    # The human is always red, because it's easier
+    game = Game()
+    while True:
+        game.print_grid()
+        move = prompt()
+        game.push_move(move)
+        if game.is_won():
+            print('----- the human wins! -----')
+            game.print_grid()
+            return
+        player1.set_move(move)
+        move = player1.get_move()
+        game.push_move(move)
+        if game.is_won():
+            print('----- the robot wins! -----')
+            game.print_grid()
+            return
+
+
 def main():
     argparser = argparse.ArgumentParser(
         description='Run two programs head-to-head in Connect Four.')
@@ -182,6 +214,12 @@ def main():
     argparser.add_argument(
         '-r', '--rounds', type=int, nargs='?', help='number of rounds to run', default=1)
     args = argparser.parse_args()
+
+    if args.player0 == 'human':
+        player1 = Player(args.player1)
+        interactivegame(player1)
+        return
+
     scores = defaultdict(lambda: 0)
     for round_num in xrange(1, args.rounds + 1):
         player0 = Player(args.player0)
