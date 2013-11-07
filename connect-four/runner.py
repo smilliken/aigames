@@ -2,6 +2,7 @@
 
 import argparse
 import subprocess
+import select
 import threading
 from collections import defaultdict
 import time
@@ -25,7 +26,10 @@ class Player(object):
         self.stderr_thread.daemon = True
         self.stderr_thread.start()
 
-    def get_move(self):
+    def get_move(self, maxtime):
+        ready, _, _ = select.select([self.proc.stdout], [], [], maxtime)
+        if ready == []:
+            return -1
         move = self.proc.stdout.readline()
         try:
             move = int(move.strip())
@@ -135,12 +139,9 @@ def rungame(player0, player1):
     game = Game()
     while True:
         try:
-            t1 = time.time()
-            val = current_player.get_move()
-            t2 = time.time()
-            time_taken = t2-t1
-            if time_taken > game.MAXTIME:
-                print('%s loses: Move took %.2f seconds' % (current_player.cmd, time_taken))
+            val = current_player.get_move(game.MAXTIME)
+            if val == -1:
+                print('%s loses: Move took >%.2f seconds' % (current_player.cmd, game.MAXTIME))
                 return next_player
         except ValueError, ex:
             print('')
