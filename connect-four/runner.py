@@ -44,7 +44,7 @@ class Player(object):
         self.proc.stdin.flush()
 
     def print_moves(self):
-        print('%s\t%s' % (self.cmd, ' '.join([str(move) for move in self.moves])))
+        print('%s\t%s' % (self.cmd.ljust(30), ' '.join([str(move) for move in self.moves])))
 
 
 class MockPlayer(object):
