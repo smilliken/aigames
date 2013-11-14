@@ -33,9 +33,14 @@ static inline void free_pos(struct pos *p) {
 
 void debug_pos(struct pos *p) {
     int i, f;
+    struct pos *c;
     debugf("POS %p\n", p);
     debugf("%p\n", p->parent);
     fi(0, 7) debugf("%p%c", p->children[i], (i < 6 ? ' ' : '\n'));
+    fi(0, 7) {
+        c = p->children[i];
+        debugf("%lf%c", c ? c->w / c->n : 0, (i < 6 ? ' ' : '\n'));
+    }
     fi(0, 6) {
         ff(0, 7) {
             debugf("%c", p->board[i][f]["0.X"+1]);
@@ -114,15 +119,18 @@ static inline int monte_carlo_round(struct pos *p, int sign) {
     return w;
 }
 
+double tie_score;
 static inline void estimate_score(struct pos *p, int sign) {
-    int w;
-    double pw;
-    if ((w = (p->winner ? p->winner : monte_carlo_round(p, sign)))) {
-        pw = (w == 1);
-    } else {
-        pw = 0.1; // TODO: optimize
+    int i, w;
+    double pw = 0;
+    fi(0, 10) {
+        if ((w = (p->winner ? p->winner : monte_carlo_round(p, sign)))) {
+            pw += (w == 1);
+        } else {
+            pw += tie_score;
+        }
     }
-    do { p->w += pw; p->n += 1; } while ((p = p->parent));
+    do { p->w += pw; p->n += i; } while ((p = p->parent));
 }
 
 static inline void add_leaf_node(struct pos *parent, int f, int sign) {
@@ -181,6 +189,7 @@ int main(void) {
     srand(time(0));
     memset(root, 0, sizeof(*root));
 
+    tie_score = 1;
     while (fgets(buf, 5, stdin)) {
         start = tm();
         c = buf[0];
@@ -200,6 +209,8 @@ int main(void) {
             }
         } else if (strcmp(buf, "go!\n")) {
             goto err;
+        } else {
+            tie_score = 0;
         }
 
         if (root->winner) return 0;
