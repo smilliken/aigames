@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-# skank's brain
-
 import sys
 import copy
 

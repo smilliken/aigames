@@ -6,10 +6,10 @@ import sys
 import copy
 
 import runner
-import skank
+import kiru 
 
 def nextmove(game):    
-    return skank.nextmove(copy.deepcopy(game))
+    return kiru.nextmove(copy.deepcopy(game))
 
 def main():
     game = runner.Game()

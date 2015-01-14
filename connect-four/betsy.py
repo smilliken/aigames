@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-# skank's brain
-
 import sys
 import copy
 import argparse
@@ -210,7 +208,6 @@ def debugit(t):
         sayit("> [%s]" % t)
 
 if __name__ == '__main__':
-    # skank router
     args = sys.argv[:]
     myname = args[0].split('/')[-1]
     if "becky" in myname:

@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-# skank's brain
-
 import sys
 import copy
 
@@ -132,7 +130,6 @@ def nextmove_3(game):
     return 4
 
 if __name__ == '__main__':
-    # skank router
     args = sys.argv[:]
     myname = args[0].split('/')[-1]
 
